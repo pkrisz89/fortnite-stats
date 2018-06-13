@@ -28,6 +28,13 @@ const UserSchema = new Schema({
     ]
 });
 
+UserSchema.statics.doesUserExist = function(username){
+    const query = { username };
+    return User.findOne(query);
+}
+
+
+
 const RegisteredUserSchema = new Schema({
     id: {
         type: Schema.Types.ObjectId,

@@ -1,9 +1,31 @@
 const graphql = require('graphql');
-const {GraphQLObjectType} = graphql;
-const mongoose = require('mongoose');
+const { GraphQLObjectType, GraphQLString} = graphql;
+const RegisterUser = require('./types/RegisterUser');
+const {User} = require('../models');
 
-//put here your mutations
+const mutation = new GraphQLObjectType({
+    name: 'Mutation', 
+    fields: {
+        registerUser: {
+            type: RegisterUser,
+            args: {
+                email: { type: GraphQLString},
+                username: { type: GraphQLString},
+                platform: { type: GraphQLString},
+                password: { type: GraphQLString}
+            },
+            resolve(parentValue, { email, password, username, platform }){
+                const newUser = new User({ username, platform });
+     
+                User.doesUserExist(username).then(user => {
+                   if ((user && user.registered)){
+                       return "User already registered"
+                   }
 
-const mutation = new GraphQLObjectType({name: 'Mutation', fields: {}});
+                })
+
+            }
+        }
+}});
 
 module.exports = mutation;
