@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const {Schema} = mongoose;
 
 const UserSchema = new Schema({
@@ -28,12 +29,12 @@ const UserSchema = new Schema({
     ]
 });
 
-UserSchema.statics.doesUserExist = function(username){
-    const query = { username };
+UserSchema.statics.doesUserExist = function (username) {
+    const query = {
+        username
+    };
     return User.findOne(query);
 }
-
-
 
 const RegisteredUserSchema = new Schema({
     id: {
@@ -55,6 +56,20 @@ const RegisteredUserSchema = new Schema({
         default: Date.now()
     }
 });
+
+RegisteredUserSchema.statics.confirmUser = (user, email, password) => {
+    bcrypt.genSalt(12, (err, salt) => {
+        bcrypt.hash(password, salt, (err, hash) => {
+            const newRegisteredUser = new RegisteredUser({id: user._id, email, password: hash});
+            return newRegisteredUser
+                .save()
+                .then(() => {
+                    user.registered = true;
+                    user.save()
+                })
+        });
+    });
+};
 
 const User = mongoose.model('User', UserSchema);
 const RegisteredUser = mongoose.model('RegisteredUser', RegisteredUserSchema);
