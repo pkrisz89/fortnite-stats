@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const {GraphQLObjectType, GraphQLString, GraphQLError} = graphql;
+const {GraphQLObjectType, GraphQLString, GraphQLError, GraphQLNonNull} = graphql;
 const RegisterUser = require('./types/RegisterUser');
 const {User, RegisteredUser} = require('../models');
 
@@ -10,16 +10,16 @@ const mutation = new GraphQLObjectType({
             type: RegisterUser,
             args: {
                 email: {
-                    type: GraphQLString
+                    type: new GraphQLNonNull(GraphQLString)
                 },
                 username: {
-                    type: GraphQLString
+                    type: new GraphQLNonNull(GraphQLString)
                 },
                 platform: {
-                    type: GraphQLString
+                    type: new GraphQLNonNull(GraphQLString)
                 },
                 password: {
-                    type: GraphQLString
+                    type: new GraphQLNonNull(GraphQLString)
                 }
             },
             resolve(parentValue, {email, password, username, platform}) {
@@ -36,8 +36,9 @@ const mutation = new GraphQLObjectType({
                         return newUser
                             .save()
                             .then(user => {
-                                return RegisteredUser.confirmUser(user, email, password)
-                                //does not return anything in graphql
+                                RegisteredUser.confirmUser(user, email, password)
+
+                                return user
                             })
                     })
 

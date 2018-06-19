@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const Promise = require('bluebird');
 const {Schema} = mongoose;
+
+Promise.promisifyAll(mongoose);
 
 const UserSchema = new Schema({
     username: {
@@ -58,14 +61,14 @@ const RegisteredUserSchema = new Schema({
 });
 
 RegisteredUserSchema.statics.confirmUser = (user, email, password) => {
-    bcrypt.genSalt(12, (err, salt) => {
+    return bcrypt.genSalt(12, (err, salt) => {
         bcrypt.hash(password, salt, (err, hash) => {
             const newRegisteredUser = new RegisteredUser({id: user._id, email, password: hash});
             return newRegisteredUser
                 .save()
                 .then(() => {
                     user.registered = true;
-                    user.save()
+                    return user.save()
                 })
         });
     });
